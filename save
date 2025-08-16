@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fantasy Alphabet Translator</title>
+  <style>
+    body {
+      font-family: "Segoe UI Symbol", "Noto Sans Symbols", "Noto Sans Symbols 2", "Arial Unicode MS", system-ui, sans-serif;
+      background: #1c1c1c;
+      color: #f5f5f5;
+      text-align: center;
+      padding: 20px;
+    }
+    textarea {
+      width: 80%;
+      height: 100px;
+      margin: 20px 0;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #666;
+    }
+    .output {
+      margin-top: 30px;
+      font-size: 24px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+    .pronunciation {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #aaa;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fantasy Alphabet Translator</h1>
+  <p>Type your word or phrase below:</p>
+  <textarea id="inputText" placeholder="Enter text here..."></textarea><br>
+  <button onclick="translateText()">Translate</button>
+
+  <div class="output" id="symbolOutput"></div>
+  <div class="pronunciation" id="pronOutput"></div>
+
+  <script>
+    // Full dictionary mapping from your table
+    const dictionary = {
+      // Vowels
+      "A": {symbol: "ᚨ", pron: "vo"},
+      "E": {symbol: "ⴻ", pron: "me"},
+      "I": {symbol: "ᛁ", pron: "ya"},
+      "O": {symbol: "ⵄ", pron: "te"},
+      "U": {symbol: "ᚢ", pron: "di"},
+      // Q series
+      "QA": {symbol: "ᛥ", pron: "thrun"},
+      "QE": {symbol: "ⵗ", pron: "vea"},
+      "QI": {symbol: "ᛪ", pron: "mar"},
+      "QO": {symbol: "ⵘ", pron: "pol"},
+      "QU": {symbol: "ᛦ", pron: "sia"},
+      // B series
+      "BA": {symbol: "ᛒ", pron: "shon"},
+      "BE": {symbol: "ⴱ", pron: "mri"},
+      "BI": {symbol: "ᛠ", pron: "kae"},
+      "BO": {symbol: "ⴲ", pron: "thun"},
+      "BU": {symbol: "ᛍ", pron: "zei"},
+      // C/K series
+      "CA": {symbol: "ᚲ", pron: "vro"}, "KA": {symbol: "ᚲ", pron: "vro"},
+      "CE": {symbol: "ⴽ", pron: "lun"}, "KE": {symbol: "ⴽ", pron: "lun"},
+      "CI": {symbol: "ᛣ", pron: "dai"}, "KI": {symbol: "ᛣ", pron: "dai"},
+      "CO": {symbol: "ⴾ", pron: "phe"}, "KO": {symbol: "ⴾ", pron: "phe"},
+      "CU": {symbol: "ᚴ", pron: "sar"}, "KU": {symbol: "ᚴ", pron: "sar"},
+      // D series
+      "DA": {symbol: "ᛞ", pron: "rei"},
+      "DE": {symbol: "ⴷ", pron: "toa"},
+      "DI": {symbol: "ᛯ", pron: "fen"},
+      "DO": {symbol: "ⵓ", pron: "yru"},
+      "DU": {symbol: "ᛟ", pron: "mek"},
+      // F series
+      "FA": {symbol: "ᚠ", pron: "zoa"},
+      "FE": {symbol: "ⴼ", pron: "lior"},
+      "FI": {symbol: "ᚡ", pron: "sha"},
+      "FO": {symbol: "ⴿ", pron: "trei"},
+      "FU": {symbol: "ᚧ", pron: "pan"},
+      // G series
+      "GA": {symbol: "ᚷ", pron: "lor"},
+      "GE": {symbol: "ⴳ", pron: "vech"},
+      "GI": {symbol: "ᚸ", pron: "mia"},
+      "GO": {symbol: "ⴴ", pron: "dro"},
+      "GU": {symbol: "ᚶ", pron: "qun"},
+      // H series
+      "HA": {symbol: "ᚺ", pron: "san"},
+      "HE": {symbol: "ⵀ", pron: "tir"},
+      "HI": {symbol: "ᚻ", pron: "voe"},
+      "HO": {symbol: "ⵁ", pron: "phel"},
+      "HU": {symbol: "ᚼ", pron: "miru"},
+      // J series
+      "JA": {symbol: "ᛃ", pron: "dra"},
+      "JE": {symbol: "ⵒ", pron: "shin"},
+      "JI": {symbol: "ᛩ", pron: "kaevo"},
+      "JO": {symbol: "ⵋ", pron: "rion"},
+      "JU": {symbol: "ᛄ", pron: "pel"},
+      // L series
+      "LA": {symbol: "ᛚ", pron: "mon"},
+      "LE": {symbol: "ⵍ", pron: "ria"},
+      "LI": {symbol: "ᛛ", pron: "siel"},
+      "LO": {symbol: "ⵎ", pron: "vore"},
+      "LU": {symbol: "ᛙ", pron: "ket"},
+      // M series
+      "MA": {symbol: "ᛗ", pron: "drae"},
+      "ME": {symbol: "ⵑ", pron: "lunor"},
+      "MI": {symbol: "ᛘ", pron: "shi"},
+      "MO": {symbol: "ⵒ", pron: "taen"},
+      "MU": {symbol: "ᛖ", pron: "pru"},
+      // N series
+      "NA": {symbol: "ᚾ", pron: "ven"},
+      "NE": {symbol: "ⵏ", pron: "sir"},
+      "NI": {symbol: "ᛜ", pron: "lua"},
+      "NO": {symbol: "ⵔ", pron: "kro"},
+      "NU": {symbol: "ᛝ", pron: "mei"},
+      // R series
+      "RA": {symbol: "ᚱ", pron: "kai"},
+      "RE": {symbol: "ⵙ", pron: "lon"},
+      "RI": {symbol: "ᚵ", pron: "shiur"},
+      "RO": {symbol: "ⵚ", pron: "thro"},
+      "RU": {symbol: "ᚳ", pron: "dia"},
+      // S series
+      "SA": {symbol: "ᛋ", pron: "zho"},
+      "SE": {symbol: "ⵛ", pron: "mian"},
+      "SI": {symbol: "ᛌ", pron: "ve"},
+      "SO": {symbol: "ⵜ", pron: "kura"},
+      "SU": {symbol: "ᛊ", pron: "tel"},
+      // T series
+      "TA": {symbol: "ᛏ", pron: "vae"},
+      "TE": {symbol: "ⵝ", pron: "pron"},
+      "TI": {symbol: "ᛨ", pron: "rie"},
+      "TO": {symbol: "ⵞ", pron: "tenor"},
+      "TU": {symbol: "ᛇ", pron: "sil"},
+      // V series
+      "VA": {symbol: "ⵈ", pron: "lie"},
+      "VE": {symbol: "ⵟ", pron: "shaen"},
+      "VI": {symbol: "ᛂ", pron: "dor"},
+      "VO": {symbol: "ⵠ", pron: "phi"},
+      "VU": {symbol: "ᛔ", pron: "kea"},
+      // W series
+      "WA": {symbol: "ᚹ", pron: "moen"},
+      "WE": {symbol: "ⵡ", pron: "drai"},
+      "WI": {symbol: "ᚥ", pron: "sur"},
+      "WO": {symbol: "ⵢ", pron: "loen"},
+      "WU": {symbol: "ᚤ", pron: "viro"},
+      // X series
+      "XA": {symbol: "᛬", pron: "trai"},
+      "XE": {symbol: "ᚯ", pron: "pon"},
+      "XI": {symbol: "᛭", pron: "keor"},
+      "XO": {symbol: "ⵤ", pron: "mya"},
+      "XU": {symbol: "ᛮ", pron: "shul"},
+      // Y series
+      "YA": {symbol: "ᛠ", pron: "ne"},
+      "YE": {symbol: "ᛡ", pron: "roen"},
+      "YI": {symbol: "Ꙩ", pron: "thu"},
+      "YO": {symbol: "Ҩ", pron: "kae"},
+      "YU": {symbol: "ᛤ", pron: "min"},
+      // Z series
+      "ZA": {symbol: "ᚿ", pron: "pha"},
+      "ZE": {symbol: "Ӝ", pron: "sai"},
+      "ZI": {symbol: "Ӟ", pron: "lor"},
+      "ZO": {symbol: "Ӡ", pron: "mey"},
+      "ZU": {symbol: "Ӂ", pron: "drau"},
+      // Numbers
+      "0": {symbol: "─", pron: "noa"},
+      "1": {symbol: "ᚒ", pron: "sel"},
+      "2": {symbol: "ᚓ", pron: "drin"},
+      "3": {symbol: "ᚔ", pron: "vath"},
+      "4": {symbol: "ᚌ", pron: "krua"},
+      "5": {symbol: "ᚍ", pron: "miel"},
+      "6": {symbol: "ᚎ", pron: "thora"},
+      "7": {symbol: "ᚏ", pron: "zeph"},
+      "8": {symbol: "ᚐ", pron: "lurn"},
+      "9": {symbol: "ᚑ", pron: "qen"},
+    };
+
+    function translateText() {
+      const input = document.getElementById("inputText").value.toUpperCase();
+      let symbolResult = "";
+      let pronResult = "";
+
+      let i = 0;
+      while (i < input.length) {
+        let found = false;
+        // Try two-letter combos (like BA, CE, etc.)
+        if (i + 1 < input.length) {
+          const pair = input.substring(i, i + 2);
+          if (dictionary[pair]) {
+            symbolResult += dictionary[pair].symbol + " ";
+            pronResult += dictionary[pair].pron + " ";
+            i += 2;
+            found = true;
+            continue;
+          }
+        }
+        // Try single letter
+        const single = input[i];
+        if (dictionary[single]) {
+          symbolResult += dictionary[single].symbol + " ";
+          pronResult += dictionary[single].pron + " ";
+        } else if (single === " ") {
+          symbolResult += "   ";
+          pronResult += "   ";
+        } else {
+          symbolResult += single + " ";
+          pronResult += single + " ";
+        }
+        i++;
+      }
+
+      document.getElementById("symbolOutput").textContent = symbolResult.trim();
+      document.getElementById("pronOutput").textContent = pronResult.trim();
+    }
+  </script>
+</body>
+</html>
